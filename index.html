@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack AI - Dark/Light Advanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind configuration for class-based dark mode
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-800 dark:text-slate-100 flex justify-center items-center min-h-screen p-0 sm:p-4 transition-colors duration-300">
+
+    <div id="toast-notification" class="fixed top-6 z-50 transform -translate-y-24 opacity-0 transition-all duration-300 ease-out max-w-sm w-11/12 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-900 dark:text-white px-4 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-100 dark:border-slate-800">
+        <div id="toast-icon-bg" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm"></div>
+        <div class="flex-1">
+            <p id="toast-message" class="text-xs font-semibold leading-snug"></p>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md h-[840px] bg-slate-50 dark:bg-slate-950 rounded-none sm:rounded-[40px] shadow-2xl overflow-hidden flex flex-col relative border-0 sm:border-[8px] border-slate-950 transition-colors duration-300">
+        
+        <div id="screen-auth" class="flex-1 flex flex-col justify-between p-6 bg-gradient-to-b from-slate-900 to-emerald-950 text-white relative">
+            <button onclick="toggleDarkMode()" class="absolute top-6 right-6 w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-sm transition-all">
+                <i id="auth-theme-icon" class="fa-solid fa-sun text-amber-400"></i>
+            </button>
+
+            <div class="flex flex-col items-center justify-center pt-20">
+                <div class="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mb-6 border border-emerald-500/20 backdrop-blur-sm relative animate-pulse">
+                    <span class="text-4xl z-10">🌱</span>
+                    <div class="absolute inset-0 bg-emerald-400/20 blur-xl rounded-full scale-75"></div>
+                </div>
+                <h1 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">EcoTrack AI</h1>
+                <p class="text-emerald-200/60 text-sm mt-2 text-center max-w-xs font-medium">Track metrics, hit target carbon budgets, and build micro-habits with AI optimization.</p>
+            </div>
+            
+            <div class="space-y-4 mb-8">
+                <button onclick="navigateTo('screen-quiz')" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold py-3.5 px-4 rounded-xl transition shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 group">
+                    Get Started <i class="fa-solid fa-arrow-right text-sm transform group-hover:translate-x-1 transition-transform"></i>
+                </button>
+                <p class="text-xs text-center text-slate-500">By continuing, you setup a local client sandbox environment.</p>
+            </div>
+        </div>
+
+        <div id="screen-quiz" class="hidden flex-1 flex flex-col bg-white dark:bg-slate-900 p-5 justify-between overflow-y-auto hide-scroll transition-colors duration-300">
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 px-2.5 py-1 rounded-md">AI Calibration</span>
+                    <span class="text-xs text-slate-400 dark:text-slate-500 font-semibold">Profile Engine</span>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-1">Calibrate Your Routine</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-xs mb-5">Select profile parameters to configure your predictive carbon baseline models.</p>
+                
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-2">🚗 Primary Transportation</label>
+                        <div class="grid grid-cols-2 gap-2" id="group-transport">
+                            <button onclick="selectTile('transport', 'high', this)" class="p-3 border-2 border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100/50 text-left transition flex flex-col justify-between h-20">
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Gas Engine</span>
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-tight">Heavy Commuter</span>
+                            </button>
+                            <button onclick="selectTile('transport', 'low', this)" id="default-transport" class="p-3 border-2 border-emerald-500 rounded-xl bg-emerald-50/30 dark:bg-emerald-950/20 text-left transition flex flex-col justify-between h-20 shadow-sm">
+                                <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400">EV / Hybrid</span>
+                                <span class="text-[10px] text-emerald-600/80 dark:text-emerald-500/80 font-medium leading-tight">Eco Commuter</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-2">🍔 Diet Preference</label>
+                        <div class="grid grid-cols-2 gap-2" id="group-diet">
+                            <button onclick="selectTile('diet', 'high', this)" class="p-3 border-2 border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100/50 text-left transition flex flex-col justify-between h-20">
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Omnivore</span>
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-tight">Regular Meats</span>
+                            </button>
+                            <button onclick="selectTile('diet', 'med', this)" id="default-diet" class="p-3 border-2 border-emerald-500 rounded-xl bg-emerald-50/30 dark:bg-emerald-950/20 text-left transition flex flex-col justify-between h-20 shadow-sm">
+                                <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400">Balanced</span>
+                                <span class="text-[10px] text-emerald-600/80 dark:text-emerald-500/80 font-medium leading-tight">Plant-Forward</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-2">🎯 Target Carbon Goal Strategy</label>
+                        <div class="grid grid-cols-2 gap-2" id="group-goal">
+                            <button onclick="selectTile('goal', 'steady', this)" id="default-goal" class="p-3 border-2 border-emerald-500 rounded-xl bg-emerald-50/30 dark:bg-emerald-950/20 text-left transition flex flex-col justify-between h-20 shadow-sm">
+                                <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400">Steady Path</span>
+                                <span class="text-[10px] text-emerald-600/80 dark:text-emerald-500/80 font-medium leading-tight">Save 15% Target Limit</span>
+                            </button>
+                            <button onclick="selectTile('goal', 'aggressive', this)" class="p-3 border-2 border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100/50 text-left transition flex flex-col justify-between h-20">
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Climate Warrior</span>
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-tight">Save 35% Strict Limit</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="calculateBaseline()" class="w-full bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-semibold py-3.5 px-4 rounded-xl transition mt-6 shrink-0 shadow-lg">
+                Generate Baseline Profile
+            </button>
+        </div>
+
+        <div id="screen-baseline" class="hidden flex-1 flex flex-col justify-between p-6 bg-slate-950 text-white text-center">
+            <div class="my-auto space-y-6">
+                <span class="text-4xl animate-bounce inline-block">📊</span>
+                <h2 class="text-2xl font-bold tracking-tight">Profile Framework Ready</h2>
+                <p class="text-sm text-slate-400 max-w-xs mx-auto">Your calibrated dynamic maximum footprint baseline budget threshold is:</p>
+                
+                <div class="inline-block bg-slate-900 border border-slate-800 rounded-3xl px-8 py-6 shadow-2xl">
+                    <span id="baseline-value" class="block text-5xl font-black text-emerald-400 mb-1">14.2</span>
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Dynamic Max Limit kg/Day</span>
+                </div>
+                
+                <p id="baseline-feedback" class="text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-900/40 py-2.5 px-4 rounded-xl max-w-xs mx-auto"></p>
+            </div>
+
+            <button onclick="navigateTo('screen-dashboard')" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-3.5 px-4 rounded-xl transition font-medium">
+                Initialize Dashboard Workspace
+            </button>
+        </div>
+
+        <div id="screen-dashboard" class="hidden flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-y-auto hide-scroll pb-24 transition-colors duration-300">
+            <div class="bg-white dark:bg-slate-900 p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center sticky top-0 z-10 shadow-xs transition-colors duration-300">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center font-bold text-white shadow-md">JD</div>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 dark:text-white">Hi, Jane Doe</h4>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider" id="dash-goal-badge">Steady Path</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleDarkMode()" class="w-8 h-8 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl flex items-center justify-center text-xs transition-all">
+                        <i id="dash-theme-icon" class="fa-solid fa-moon"></i>
+                    </button>
+                    <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                        <span class="text-sm">🌱</span>
+                        <span id="score-points" class="text-xs font-bold text-emerald-700 dark:text-emerald-400">1,250 pts</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 space-y-4">
+                
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-800/80 text-center flex flex-col items-center relative overflow-hidden transition-colors duration-300">
+                    <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Today's Aggregated Footprint</h3>
+                    <div class="relative w-40 h-40 flex items-center justify-center">
+                        <div id="gauge-ring" class="absolute inset-0 rounded-full transition-all duration-500" style="mask-image: radial-gradient(transparent 58%, black 59%); -webkit-mask-image: radial-gradient(transparent 58%, black 59%);"></div>
+                        <div class="z-10 text-center">
+                            <span id="dash-carbon-value" class="text-3xl font-black text-slate-800 dark:text-white transition-all">14.2</span>
+                            <span class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mt-0.5">kg CO₂e Logged</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+                        <div class="text-left pl-2">
+                            <span class="text-[10px] block font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Target Budget</span>
+                            <span id="dash-target-limit" class="text-sm font-bold text-slate-700 dark:text-slate-300">12.0 kg</span>
+                        </div>
+                        <div class="text-right pr-2">
+                            <span class="text-[10px] block font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Safety Status</span>
+                            <span id="dash-status" class="text-sm font-bold">Optimal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-slate-900 to-slate-850 dark:from-slate-900 dark:to-slate-900 text-white rounded-2xl p-4 shadow-xl flex items-start gap-3 border border-slate-800 relative overflow-hidden">
+                    <div class="text-base bg-emerald-500/10 text-emerald-400 p-2 rounded-xl border border-emerald-500/20 shrink-0">🤖</div>
+                    <div class="flex-1">
+                        <h5 class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">AI Predictive Insights</h5>
+                        <p id="ai-tip-text" class="text-xs font-medium leading-relaxed mt-0.5 text-slate-300"></p>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800/80 transition-colors duration-300">
+                    <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Emission Trend vs Target</h3>
+                    <div class="h-44">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2.5 px-1">Log Daily Activity Parameters</h3>
+                    <div class="grid grid-cols-4 gap-2.5">
+                        <button onclick="openTracker('transport')" class="bg-white dark:bg-slate-900 p-3 border border-slate-100 dark:border-slate-800/80 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md transition text-center flex flex-col items-center gap-1.5 shadow-xs group transition-colors duration-300">
+                            <span class="text-xl group-hover:scale-110 transition-transform">🚗</span>
+                            <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">Transit</span>
+                        </button>
+                        <button onclick="openTracker('electricity')" class="bg-white dark:bg-slate-900 p-3 border border-slate-100 dark:border-slate-800/80 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md transition text-center flex flex-col items-center gap-1.5 shadow-xs group transition-colors duration-300">
+                            <span class="text-xl group-hover:scale-110 transition-transform">⚡</span>
+                            <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">Energy</span>
+                        </button>
+                        <button onclick="openTracker('food')" class="bg-white dark:bg-slate-900 p-3 border border-slate-100 dark:border-slate-800/80 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md transition text-center flex flex-col items-center gap-1.5 shadow-xs group transition-colors duration-300">
+                            <span class="text-xl group-hover:scale-110 transition-transform">🍔</span>
+                            <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">Food</span>
+                        </button>
+                        <button onclick="openTracker('shopping')" class="bg-white dark:bg-slate-900 p-3 border border-slate-100 dark:border-slate-800/80 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md transition text-center flex flex-col items-center gap-1.5 shadow-xs group transition-colors duration-300">
+                            <span class="text-xl group-hover:scale-110 transition-transform">🛍️</span>
+                            <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">Shopping</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2.5 px-1">Activity Streams Logged Today</h3>
+                    <div id="history-log-container" class="space-y-2">
+                        <p id="empty-history-message" class="text-xs text-center text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-900 py-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">No activity logged yet today.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="screen-tracker" class="hidden flex-1 flex flex-col bg-white dark:bg-slate-900 p-6 justify-between transition-colors duration-300">
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="navigateTo('screen-dashboard')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i class="fa-solid fa-arrow-left text-lg"></i></button>
+                    <h2 id="tracker-title" class="text-base font-bold text-slate-900 dark:text-white">Log Entry Channel</h2>
+                    <span class="w-4"></span>
+                </div>
+
+                <div class="text-center py-6 bg-slate-50 dark:bg-slate-950 rounded-2xl mb-6 border border-slate-100 dark:border-slate-800/80">
+                    <span id="tracker-icon" class="text-4xl block mb-2">🚗</span>
+                    <p id="tracker-desc" class="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto px-4"></p>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1" id="input-label"></label>
+                    <input type="number" id="tracker-input-value" value="0" min="0" class="w-full text-2xl font-bold tracking-tight text-slate-800 dark:text-white border border-slate-200 dark:border-slate-800 rounded-xl p-3 bg-slate-50 dark:bg-slate-950 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-500">
+                </div>
+            </div>
+
+            <button onclick="submitTrackingLog()" class="w-full bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-semibold py-3.5 px-4 rounded-xl transition mt-6 shadow-md">
+                Commit Activity Item
+            </button>
+        </div>
+
+        <div id="screen-challenges" class="hidden flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-y-auto hide-scroll pb-24 transition-colors duration-300">
+            <div class="p-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-10 shadow-xs transition-colors duration-300">
+                <h2 class="text-base font-bold text-slate-800 dark:text-white">Habit Optimizers</h2>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 font-semibold">Complete challenges to earn reward multipliers</p>
+            </div>
+
+            <div class="p-4 space-y-3">
+                <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-4 rounded-xl shadow-sm flex justify-between items-center gap-4 transition-colors duration-300">
+                    <div class="space-y-1">
+                        <span class="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Daily Token</span>
+                        <h4 class="text-sm font-bold text-slate-800 dark:text-white">Zero-Waste Meal Option</h4>
+                        <p class="text-xs text-slate-400 dark:text-slate-500">Offsets estimated ~1.8kg carbon equivalents</p>
+                    </div>
+                    <button onclick="completeChallenge(150, this)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition shrink-0 shadow-sm">
+                        +150 pts
+                    </button>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-4 rounded-xl shadow-sm flex justify-between items-center gap-4 transition-colors duration-300">
+                    <div class="space-y-1">
+                        <span class="bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Weekly Routine</span>
+                        <h4 class="text-sm font-bold text-slate-800 dark:text-white">Total Electric Transit Track</h4>
+                        <p class="text-xs text-slate-400 dark:text-slate-500">Zero vehicle miles recorded over a 3-day window</p>
+                    </div>
+                    <button onclick="completeChallenge(400, this)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition shrink-0 shadow-sm">
+                        +400 pts
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="global-nav" class="hidden absolute bottom-0 inset-x-0 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 h-16 grid grid-cols-2 items-center z-20 transition-colors duration-300">
+            <button onclick="navigateTo('screen-dashboard')" class="flex flex-col items-center justify-center gap-1 text-emerald-600" id="nav-dash-btn">
+                <i class="fa-solid fa-chart-pie text-lg"></i>
+                <span class="text-[10px] font-bold tracking-wide">Dashboard</span>
+            </button>
+            <button onclick="navigateTo('screen-challenges')" class="flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300" id="nav-chal-btn">
+                <i class="fa-solid fa-leaf text-lg"></i>
+                <span class="text-[10px] font-bold tracking-wide">Challenges</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // System Config Variables
+        let selections = { transport: 'low', diet: 'med', goal: 'steady' };
+        let currentCarbonEmissions = 0.0; 
+        let pointsBalance = 1250;
+        let carbonTargetLimit = 12.0; 
+        let activeTrackerType = 'transport';
+        let trendChartInstance = null;
+
+        // DARK MODE CONTROLLER ENGINE
+        function toggleDarkMode() {
+            const htmlEl = document.documentElement;
+            const authIcon = document.getElementById('auth-theme-icon');
+            const dashIcon = document.getElementById('dash-theme-icon');
+            
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                authIcon.className = "fa-solid fa-sun text-amber-400";
+                dashIcon.className = "fa-solid fa-moon";
+                showToast("Light Mode Active");
+            } else {
+                htmlEl.classList.add('dark');
+                authIcon.className = "fa-solid fa-moon text-indigo-200";
+                dashIcon.className = "fa-solid fa-sun text-amber-400";
+                showToast("Dark Mode Active");
+            }
+            
+            // Re-render chart coordinates to refresh lines color mapping patterns
+            if (trendChartInstance) {
+                initializeChart();
+            }
+        }
+
+        // Notification System Utility
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            const iconBg = document.getElementById('toast-icon-bg');
+            const msgEl = document.getElementById('toast-message');
+
+            msgEl.innerText = message;
+            if(type === 'success') {
+                iconBg.className = "w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+                iconBg.innerHTML = "✓";
+            } else {
+                iconBg.className = "w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-amber-500/10 text-amber-500 border border-amber-500/20";
+                iconBg.innerHTML = "⚠";
+            }
+
+            toast.classList.remove('-translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('-translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // Selection Grid Handler Logic
+        function selectTile(category, value, element) {
+            selections[category] = value;
+            const container = document.getElementById(`group-${category}`);
+            const buttons = container.getElementsByTagName('button');
+            
+            for (let btn of buttons) {
+                btn.className = "p-3 border-2 border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100/50 text-left transition flex flex-col justify-between h-20";
+                btn.children[0].className = "text-xs font-bold text-slate-700 dark:text-slate-300";
+                btn.children[1].className = "text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-tight";
+            }
+            
+            element.className = "p-3 border-2 border-emerald-500 rounded-xl bg-emerald-50/30 dark:bg-emerald-950/20 text-left transition flex flex-col justify-between h-20 shadow-sm";
+            element.children[0].className = "text-xs font-bold text-emerald-800 dark:text-emerald-400";
+            element.children[1].className = "text-[10px] text-emerald-600/80 dark:text-emerald-500/80 font-medium leading-tight";
+        }
+
+        // Routing Navigation Framework
+        function navigateTo(screenId) {
+            ['screen-auth', 'screen-quiz', 'screen-baseline', 'screen-dashboard', 'screen-tracker', 'screen-challenges'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            
+            document.getElementById(screenId).classList.remove('hidden');
+
+            const nav = document.getElementById('global-nav');
+            if(screenId === 'screen-dashboard' || screenId === 'screen-challenges') {
+                nav.classList.remove('hidden');
+                document.getElementById('nav-dash-btn').className = screenId === 'screen-dashboard' ? "flex flex-col items-center justify-center gap-1 text-emerald-600" : "flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500";
+                document.getElementById('nav-chal-btn').className = screenId === 'screen-challenges' ? "flex flex-col items-center justify-center gap-1 text-emerald-600" : "flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500";
+            } else {
+                nav.classList.add('hidden');
+            }
+
+            if(screenId === 'screen-dashboard') {
+                setTimeout(initializeChart, 50);
+            }
+        }
+
+        // Model Calculation Baseline Processing Matrix
+        function calculateBaseline() {
+            let base = 10.0;
+            if (selections.transport === 'high') base += 5.5;
+            if (selections.diet === 'high') base += 4.5;
+            
+            let scaleModifier = selections.goal === 'aggressive' ? 0.65 : 0.85;
+            
+            currentCarbonEmissions = parseFloat((base * scaleModifier).toFixed(1));
+            carbonTargetLimit = parseFloat(base.toFixed(1));
+
+            document.getElementById('baseline-value').innerText = currentCarbonEmissions;
+            document.getElementById('dash-carbon-value').innerText = currentCarbonEmissions;
+            document.getElementById('dash-target-limit').innerText = `${carbonTargetLimit} kg`;
+            document.getElementById('dash-goal-badge').innerText = selections.goal === 'aggressive' ? "Climate Warrior (-35%)" : "Steady Path (-15%)";
+            
+            document.getElementById('baseline-feedback').innerText = `AI calibrated your system targeting a strict budget profile boundary limit of ${carbonTargetLimit}kg CO₂e/day max.`;
+
+            updateDynamicMetricsUI();
+            navigateTo('screen-baseline');
+        }
+
+        // Modal Form Setup Pipeline
+        function openTracker(type) {
+            activeTrackerType = type;
+            const label = document.getElementById('input-label');
+            const icon = document.getElementById('tracker-icon');
+            const title = document.getElementById('tracker-title');
+            const desc = document.getElementById('tracker-desc');
+            const valInput = document.getElementById('tracker-input-value');
+            
+            valInput.value = "";
+
+            if(type === 'transport') {
+                title.innerText = "Log Commute Track";
+                icon.innerText = "🚗";
+                label.innerText = "Distance Driven Today (Miles)";
+                desc.innerText = "AI will process your fuel profile models against an emission weight coefficient of 0.41kg/mile.";
+            } else if(type === 'electricity') {
+                title.innerText = "Log Energy Consumed";
+                icon.innerText = "⚡";
+                label.innerText = "Utility Load Metric (kWh)";
+                desc.innerText = "Computes grid generation factors mapping typical regional mixed energy generation models.";
+            } else if(type === 'food') {
+                title.innerText = "Log Meal Metrics";
+                icon.innerText = "🍔";
+                label.innerText = "Serving Count of Meat-Heavy Dishes Eaten";
+                desc.innerText = "Calculates supply chain production greenhouse gases generated per meat protein serving.";
+            } else if(type === 'shopping') {
+                title.innerText = "Log Consumer Purchasing";
+                icon.innerText = "🛍️";
+                label.innerText = "New Fast-Fashion / Luxury items bought";
+                desc.innerText = "Estimates manufacturing, retail distribution, and material life cycle overhead values.";
+            }
+            navigateTo('screen-tracker');
+        }
+
+        // Submit Item Inputs Core Commit Log Engine
+        function submitTrackingLog() {
+            const rawVal = parseFloat(document.getElementById('tracker-input-value').value) || 0;
+            if(rawVal <= 0) {
+                navigateTo('screen-dashboard');
+                return;
+            }
+
+            let impactFactor = 0;
+            let logTitle = "";
+            let logSubtitle = "";
+
+            if(activeTrackerType === 'transport') {
+                impactFactor = rawVal * 0.41;
+                logTitle = `Commute: ${rawVal} Miles`;
+                logSubtitle = `🚗 Transport impact addition`;
+            } else if(activeTrackerType === 'electricity') {
+                impactFactor = rawVal * 0.38;
+                logTitle = `Utility Use: ${rawVal} kWh`;
+                logSubtitle = `⚡ Grid electrical consumption`;
+            } else if(activeTrackerType === 'food') {
+                impactFactor = rawVal * 2.1;
+                logTitle = `Diet Log: ${rawVal} Meat Servings`;
+                logSubtitle = `🍔 Supply chain processing cost`;
+            } else if(activeTrackerType === 'shopping') {
+                impactFactor = rawVal * 7.4;
+                logTitle = `Retail purchase: ${rawVal} Items`;
+                logSubtitle = `🛍️ Commercial life-cycle footprint`;
+            }
+
+            currentCarbonEmissions = parseFloat((currentCarbonEmissions + impactFactor).toFixed(1));
+            document.getElementById('dash-carbon-value').innerText = currentCarbonEmissions;
+
+            pointsBalance += 25; 
+            document.getElementById('score-points').innerText = `${pointsBalance.toLocaleString()} pts`;
+
+            appendHistoryCard(logTitle, logSubtitle, `+${impactFactor.toFixed(1)} kg`);
+
+            showToast(`Logged +${impactFactor.toFixed(1)}kg CO₂e loaded.`, 'alert');
+            updateDynamicMetricsUI();
+            navigateTo('screen-dashboard');
+        }
+
+        // Dynamic Card Creation Component
+        function appendHistoryCard(title, subtitle, badgeText) {
+            const container = document.getElementById('history-log-container');
+            const emptyMsg = document.getElementById('empty-history-message');
+            if (emptyMsg) emptyMsg.remove();
+
+            const card = document.createElement('div');
+            card.className = "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-3.5 rounded-xl shadow-xs flex justify-between items-center transition-all duration-300";
+            card.innerHTML = `
+                <div>
+                    <h5 class="text-xs font-bold text-slate-800 dark:text-slate-200">${title}</h5>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">${subtitle}</p>
+                </div>
+                <span class="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-1 rounded-md">${badgeText}</span>
+            `;
+            container.prepend(card);
+        }
+
+        // Challenge Execution Module
+        function completeChallenge(points, buttonElement) {
+            pointsBalance += points;
+            document.getElementById('score-points').innerText = `${pointsBalance.toLocaleString()} pts`;
+            
+            buttonElement.disabled = true;
+            buttonElement.innerText = "Completed ✓";
+            buttonElement.className = "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 text-xs font-bold px-3 py-2 rounded-lg pointer-events-none shrink-0";
+            
+            currentCarbonEmissions = Math.max(0.0, parseFloat((currentCarbonEmissions - 1.5).toFixed(1)));
+            document.getElementById('dash-carbon-value').innerText = currentCarbonEmissions;
+            
+            showToast(`Awarded +${points}pts!`);
+            updateDynamicMetricsUI();
+        }
+
+        // Status Logic Sync Engine
+        function updateDynamicMetricsUI() {
+            document.getElementById('dash-carbon-value').innerText = currentCarbonEmissions;
+            const statusText = document.getElementById('dash-status');
+            const aiCoachText = document.getElementById('ai-tip-text');
+            const ring = document.getElementById('gauge-ring');
+
+            let performanceRatio = currentCarbonEmissions / carbonTargetLimit;
+            let degs = Math.min(360, Math.round(performanceRatio * 360));
+            
+            // Check dark mode for ring configuration fallback channels
+            const isDark = document.documentElement.classList.contains('dark');
+            const trackColor = isDark ? '#1e293b' : '#e2e8f0';
+
+            if(currentCarbonEmissions <= carbonTargetLimit) {
+                statusText.innerText = "Within Target";
+                statusText.className = "text-sm font-bold text-emerald-600 dark:text-emerald-400";
+                aiCoachText.innerText = "Your daily aggregated trends match your carbon target perfectly. Maintain current pacing thresholds to achieve monthly goal strategies.";
+                ring.style.backgroundImage = `conic-gradient(#10b981 ${degs}deg, ${trackColor} ${degs}deg)`;
+            } else {
+                statusText.innerText = "Budget Exceeded";
+                statusText.className = "text-sm font-bold text-rose-500";
+                aiCoachText.innerText = "Alert: Current activity stream matrix broke past your target budget. Consider adopting a dynamic habit optimizer task instantly.";
+                ring.style.backgroundImage = `conic-gradient(#f43f5e ${degs}deg, ${trackColor} ${degs}deg)`;
+            }
+
+            if (trendChartInstance) {
+                trendChartInstance.data.datasets[0].data[4] = currentCarbonEmissions;
+                trendChartInstance.update();
+            }
+        }
+
+        // Dynamic ChartJS Init Engine
+        function initializeChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+
+            // Detect current active layout theme
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const gridColor = isDarkMode ? '#1e293b' : '#f1f5f9';
+            const labelColor = isDarkMode ? '#94a3b8' : '#64748b';
+
+            trendChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        {
+                            label: 'Daily kg CO₂e',
+                            data: [9.4, 11.2, 8.5, 10.1, currentCarbonEmissions, 0, 0],
+                            backgroundColor: '#10b981',
+                            borderRadius: 6,
+                            maxBarThickness: 20
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: labelColor, font: { size: 9 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: labelColor, font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
